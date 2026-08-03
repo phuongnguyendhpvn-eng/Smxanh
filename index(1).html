@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SM Xanh</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#eaf4ff;
+    padding:15px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+
+.card{
+    background:#fff;
+    border:2px solid #90caf9;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+h1{
+    text-align:center;
+    color:#1976d2;
+    margin-bottom:5px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#555;
+    margin-top:0;
+}
+
+label{
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:10px;
+    box-sizing:border-box;
+}
+
+button{
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    color:#fff;
+    cursor:pointer;
+}
+
+.btn-save{
+    background:#1976d2;
+    width:100%;
+    margin-bottom:8px;
+}
+
+.btn-delete{
+    background:#ef6c00;
+    width:100%;
+}
+
+.small-btn{
+    background:#ef6c00;
+    padding:6px 10px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:6px;
+    text-align:center;
+}
+
+th{
+    background:#ffd54f;
+    color:#000;
+}
+
+.summary{
+    background:#fff8e1;
+    border:2px solid #ffd54f;
+    color:#000;
+    line-height:1.8;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h1>SM Xanh</h1>
+<p class="subtitle">Sổ theo dõi thu nhập</p>
+
+<label>Ngày</label>
+<input type="date" id="ngay">
+
+<label>Thu nhập ròng</label>
+<input type="text" id="thuNhap">
+
+<label>Số dư đầu kỳ</label>
+<input type="text" id="dauKy">
+
+<label>Số dư cuối kỳ</label>
+<input type="text" id="cuoiKy">
+
+<label>Chi phí</label>
+<input type="text" id="chiPhi">
+
+<button class="btn-save" onclick="themDuLieu()">
+Lưu dữ liệu
+</button>
+
+<button class="btn-delete" onclick="xoaTatCa()">
+Xóa toàn bộ dữ liệu
+</button>
+
+</div>
+
+<div class="card summary">
+
+<b>Tổng Thu nhập:</b>
+<span id="tongThuNhap">0 đ</span><br>
+
+<b>Tổng App phát sinh:</b>
+<span id="tongApp">0 đ</span><br>
+
+<b>Tổng Rút App:</b>
+<span id="tongRutApp">0 đ</span><br>
+
+<b>Tổng Tiền mặt:</b>
+<span id="tongMat">0 đ</span><br>
+
+<b>Tổng Chi phí:</b>
+<span id="tongChiPhi">0 đ</span>
+
+</div>
+
+<div class="card">
+
+<div class="table-wrap">
+
+<table>
+<thead>
+<tr>
+<th>Ngày</th>
+<th>Thu nhập</th>
+<th>App phát sinh</th>
+<th>Rút App</th>
+<th>Tiền mặt</th>
+<th>Chi phí</th>
+<th>Xóa</th>
+</tr>
+</thead>
+
+<tbody id="bangDuLieu"></tbody>
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let duLieu = JSON.parse(localStorage.getItem("smxanh")) || [];
+
+function parseMoney(value){
+    return Number(value.replace(/\./g,'').replace(/,/g,'')) || 0;
+}
+
+function dinhDang(n){
+    return Number(n).toLocaleString('vi-VN') + ' đ';
+}
+
+function formatMoney(value){
+    value = value.replace(/\D/g,'');
+    if(!value) return '';
+    return Number(value).toLocaleString('vi-VN');
+}
+
+["thuNhap","dauKy","cuoiKy","chiPhi"].forEach(id=>{
+    document.getElementById(id).addEventListener("input",function(){
+        this.value = formatMoney(this.value);
+    });
+});
+
+function hienThi(){
+
+let html='';
+
+let tongThuNhap=0;
+let tongApp=0;
+let tongRutApp=0;
+let tongMat=0;
+let tongChiPhi=0;
+
+duLieu.forEach((item,index)=>{
+
+tongThuNhap += item.thuNhap;
+tongApp += item.app;
+tongRutApp += item.rutApp;
+tongMat += item.mat;
+tongChiPhi += item.chiPhi;
+
+html += `
+<tr>
+<td>${item.ngay}</td>
+<td>${dinhDang(item.thuNhap)}</td>
+<td>${dinhDang(item.app)}</td>
+<td>${dinhDang(item.rutApp)}</td>
+<td>${dinhDang(item.mat)}</td>
+<td>${dinhDang(item.chiPhi)}</td>
+<td><button class="small-btn" onclick="xoaDong(${index})">🗑️</button></td>
+</tr>
+`;
+
+});
+
+document.getElementById("bangDuLieu").innerHTML = html;
+
+document.getElementById("tongThuNhap").innerText = dinhDang(tongThuNhap);
+document.getElementById("tongApp").innerText = dinhDang(tongApp);
+document.getElementById("tongRutApp").innerText = dinhDang(tongRutApp);
+document.getElementById("tongMat").innerText = dinhDang(tongMat);
+document.getElementById("tongChiPhi").innerText = dinhDang(tongChiPhi);
+
+}
+
+function themDuLieu(){
+
+const ngay = document.getElementById("ngay").value;
+
+if(!ngay){
+    alert("Vui lòng chọn ngày");
+    return;
+}
+
+const thuNhap = parseMoney(document.getElementById("thuNhap").value);
+const dauKy = parseMoney(document.getElementById("dauKy").value);
+const cuoiKy = parseMoney(document.getElementById("cuoiKy").value);
+const chiPhi = parseMoney(document.getElementById("chiPhi").value);
+
+let app = 0;
+let rutApp = 0;
+
+if(cuoiKy >= dauKy){
+    app = cuoiKy - dauKy;
+}else{
+    rutApp = dauKy - cuoiKy;
+}
+
+const mat = thuNhap - app;
+
+duLieu.push({
+    ngay,
+    thuNhap,
+    app,
+    rutApp,
+    mat,
+    chiPhi
+});
+
+localStorage.setItem("smxanh", JSON.stringify(duLieu));
+
+document.getElementById("thuNhap").value = "";
+document.getElementById("chiPhi").value = "";
+document.getElementById("dauKy").value = cuoiKy.toLocaleString("vi-VN");
+document.getElementById("cuoiKy").value = "";
+
+hienThi();
+
+}
+
+function xoaDong(index){
+
+if(confirm("Xóa dòng này?")){
+    duLieu.splice(index,1);
+    localStorage.setItem("smxanh", JSON.stringify(duLieu));
+    hienThi();
+}
+
+}
+
+function xoaTatCa(){
+
+if(confirm("Xóa toàn bộ dữ liệu?")){
+    localStorage.removeItem("smxanh");
+    duLieu=[];
+    hienThi();
+}
+
+}
+
+hienThi();
+
+</script>
+
+</body>
+</html>
