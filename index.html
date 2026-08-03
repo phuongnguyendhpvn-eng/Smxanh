@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SM Xanh - Theo dõi thu nhập</title>
+<title>SM Xanh</title>
 
 <style>
 body{
-    font-family: Arial, sans-serif;
-    background:#f4f6f9;
-    margin:0;
+    font-family: Arial,sans-serif;
+    background:#f3f4f6;
     padding:15px;
 }
 
@@ -20,10 +19,10 @@ body{
 
 .card{
     background:white;
-    border-radius:12px;
     padding:15px;
+    border-radius:10px;
     margin-bottom:15px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
 h1{
@@ -43,13 +42,11 @@ input{
 }
 
 button{
-    width:100%;
-    padding:12px;
+    padding:10px;
     border:none;
-    border-radius:8px;
+    border-radius:6px;
     color:white;
-    font-size:16px;
-    margin-top:5px;
+    cursor:pointer;
 }
 
 .btn-save{
@@ -60,6 +57,11 @@ button{
     background:#dc2626;
 }
 
+.small-btn{
+    background:#dc2626;
+    padding:5px 10px;
+}
+
 table{
     width:100%;
     border-collapse:collapse;
@@ -68,7 +70,7 @@ table{
 
 th,td{
     border:1px solid #ddd;
-    padding:8px;
+    padding:6px;
     text-align:center;
 }
 
@@ -80,12 +82,6 @@ th{
 .summary{
     line-height:1.8;
 }
-
-.small-btn{
-    width:auto;
-    padding:6px 10px;
-    border-radius:6px;
-}
 </style>
 </head>
 
@@ -94,7 +90,6 @@ th{
 <div class="container">
 
 <div class="card">
-
 <h1>SM Xanh</h1>
 
 <label>Ngày</label>
@@ -124,24 +119,20 @@ Xóa toàn bộ dữ liệu
 
 <div class="card summary">
 
-<b>Tổng thu nhập ròng:</b>
-<span id="tongThuNhap">0 ₫</span>
-<br>
+<b>Tổng thu nhập:</b>
+<span id="tongThuNhap">0 đ</span><br>
 
-<b>Tổng tiền App:</b>
-<span id="tongApp">0 ₫</span>
-<br>
+<b>Tổng App:</b>
+<span id="tongApp">0 đ</span><br>
 
-<b>Tổng tiền Mặt:</b>
-<span id="tongMat">0 ₫</span>
-<br>
+<b>Tổng Tiền Mặt:</b>
+<span id="tongMat">0 đ</span><br>
 
-<b>Tổng chi phí:</b>
-<span id="tongChiPhi">0 ₫</span>
-<br>
+<b>Tổng Chi Phí:</b>
+<span id="tongChiPhi">0 đ</span><br>
 
-<b>Tổng lợi nhuận:</b>
-<span id="tongLoiNhuan">0 ₫</span>
+<b>Tổng Lợi Nhuận:</b>
+<span id="tongLoiNhuan">0 đ</span>
 
 </div>
 
@@ -172,212 +163,172 @@ Xóa toàn bộ dữ liệu
 <script>
 
 let duLieu =
-JSON.parse(localStorage.getItem("smxanh"))
-|| [];
+JSON.parse(localStorage.getItem("smxanh")) || [];
+
+function parseMoney(value){
+    return Number(
+        value.replace(/\./g,"").replace(/,/g,"")
+    ) || 0;
+}
+
+function dinhDang(n){
+    return Number(n).toLocaleString("vi-VN") + " đ";
+}
 
 function formatMoney(value){
 
     value = value.replace(/\D/g,'');
 
-    if(value === '') return '';
+    if(!value) return '';
 
-    return Number(value)
-    .toLocaleString('vi-VN');
+    return Number(value).toLocaleString('vi-VN');
 }
 
-function parseMoney(value){
+["thuNhap","dauKy","cuoiKy","chiPhi"].forEach(id=>{
 
-    return Number(
-        value.replace(/\./g,'')
-             .replace(/,/g,'')
-    ) || 0;
-}
-
-function dinhDang(n){
-
-    return Number(n)
-    .toLocaleString('vi-VN')
-    + ' ₫';
-}
-
-["thuNhap","dauKy","cuoiKy","chiPhi"]
-.forEach(id=>{
-
-    const input =
-    document.getElementById(id);
+    const input=document.getElementById(id);
 
     input.addEventListener("input",function(){
 
-        this.value =
-        formatMoney(this.value);
+        this.value=formatMoney(this.value);
 
     });
 
 });
 
+function hienThi(){
+
+let html="";
+
+let tongThuNhap=0;
+let tongApp=0;
+let tongMat=0;
+let tongChiPhi=0;
+let tongLoiNhuan=0;
+
+duLieu.forEach((item,index)=>{
+
+tongThuNhap+=item.thuNhap;
+tongApp+=item.app;
+tongMat+=item.mat;
+tongChiPhi+=item.chiPhi;
+tongLoiNhuan+=item.loiNhuan;
+
+html+=`
+<tr>
+<td>${item.ngay}</td>
+<td>${dinhDang(item.thuNhap)}</td>
+<td>${dinhDang(item.app)}</td>
+<td>${dinhDang(item.mat)}</td>
+<td>${dinhDang(item.chiPhi)}</td>
+<td>${dinhDang(item.loiNhuan)}</td>
+<td>
+<button class="small-btn"
+onclick="xoaDong(${index})">
+Xóa
+</button>
+</td>
+</tr>
+`;
+
+});
+
+document.getElementById("bangDuLieu").innerHTML=html;
+
+document.getElementById("tongThuNhap").innerText=dinhDang(tongThuNhap);
+document.getElementById("tongApp").innerText=dinhDang(tongApp);
+document.getElementById("tongMat").innerText=dinhDang(tongMat);
+document.getElementById("tongChiPhi").innerText=dinhDang(tongChiPhi);
+document.getElementById("tongLoiNhuan").innerText=dinhDang(tongLoiNhuan);
+
+}
+
 function themDuLieu(){
 
-    const ngay =
-    document.getElementById("ngay").value;
+const ngay=document.getElementById("ngay").value;
 
-    const thuNhap =
-    parseMoney(
-        document.getElementById("thuNhap").value
-    );
+const thuNhap=parseMoney(
+document.getElementById("thuNhap").value
+);
 
-    const dauKy =
-    parseMoney(
-        document.getElementById("dauKy").value
-    );
+const dauKy=parseMoney(
+document.getElementById("dauKy").value
+);
 
-    const cuoiKy =
-    parseMoney(
-        document.getElementById("cuoiKy").value
-    );
+const cuoiKy=parseMoney(
+document.getElementById("cuoiKy").value
+);
 
-    const chiPhi =
-    parseMoney(
-        document.getElementById("chiPhi").value
-    );
+const chiPhi=parseMoney(
+document.getElementById("chiPhi").value
+);
 
-    if(!ngay){
-        alert("Vui lòng chọn ngày");
-        return;
-    }
+if(!ngay){
+alert("Vui lòng chọn ngày");
+return;
+}
 
-    const tienApp =
-    cuoiKy - dauKy;
+const app=cuoiKy-dauKy;
 
-    const tienMat =
-    thuNhap - tienApp;
+const mat=thuNhap-app;
 
-    const loiNhuan =
-    thuNhap - chiPhi;
+const loiNhuan=thuNhap-chiPhi;
 
-    duLieu.push({
+duLieu.push({
+ngay,
+thuNhap,
+app,
+mat,
+chiPhi,
+loiNhuan
+});
 
-        ngay,
+localStorage.setItem(
+"smxanh",
+JSON.stringify(duLieu)
+);
 
-        thuNhap,
+document.getElementById("thuNhap").value="";
+document.getElementById("chiPhi").value="";
 
-        app:tienApp,
+document.getElementById("dauKy").value=
+cuoiKy.toLocaleString("vi-VN");
 
-        mat:tienMat,
+document.getElementById("cuoiKy").value="";
 
-        chiPhi,
+hienThi();
 
-        loiNhuan
-
-    });
-
-    localStorage.setItem(
-        "smxanh",
-        JSON.stringify(duLieu)
-    );
-
-    document.getElementById("thuNhap").value='';
-    document.getElementById("chiPhi").value='';
-    document.getElementById("dauKy").value=
-    cuoiKy.toLocaleString('vi-VN');
-    document.getElementById("cuoiKy").value='';
-
-    hienThi();
 }
 
 function xoaDong(index){
 
-    if(confirm("Xóa dòng này?")){
+if(confirm("Xóa dòng này?")){
 
-        duLieu.splice(index,1);
+duLieu.splice(index,1);
 
-        localStorage.setItem(
-            "smxanh",
-            JSON.stringify(duLieu)
-        );
+localStorage.setItem(
+"smxanh",
+JSON.stringify(duLieu)
+);
 
-        hienThi();
-    }
+hienThi();
+
+}
+
 }
 
 function xoaTatCa(){
 
-    if(confirm("Xóa toàn bộ dữ liệu?")){
+if(confirm("Xóa toàn bộ dữ liệu?")){
 
-        duLieu=[];
+localStorage.removeItem("smxanh");
 
-        localStorage.removeItem(
-            "smxanh"
-        );
+duLieu=[];
 
-        hienThi();
-    }
+hienThi();
+
 }
 
-function hienThi(){
-
-    let html='';
-
-    let tongThuNhap=0;
-    let tongApp=0;
-    let tongMat=0;
-    let tongChiPhi=0;
-    let tongLoiNhuan=0;
-
-    duLieu.forEach((item,index)=>{
-
-        tongThuNhap+=item.thuNhap;
-        tongApp+=item.app;
-        tongMat+=item.mat;
-        tongChiPhi+=item.chiPhi;
-        tongLoiNhuan+=item.loiNhuan;
-
-        html += `
-        <tr>
-            <td>${item.ngay}</td>
-            <td>${dinhDang(item.thuNhap)}</td>
-            <td>${dinhDang(item.app)}</td>
-            <td>${dinhDang(item.mat)}</td>
-            <td>${dinhDang(item.chiPhi)}</td>
-            <td>${dinhDang(item.loiNhuan)}</td>
-            <td>
-                <button
-                class="small-btn btn-delete"
-                onclick="xoaDong(${index})">
-                🗑️
-                </button>
-            </td>
-        </tr>
-        `;
-    });
-
-    document.getElementById(
-        "bangDuLieu"
-    ).innerHTML = html;
-
-    document.getElementById(
-        "tongThuNhap"
-    ).innerText =
-    dinhDang(tongThuNhap);
-
-    document.getElementById(
-        "tongApp"
-    ).innerText =
-    dinhDang(tongApp);
-
-    document.getElementById(
-        "tongMat"
-    ).innerText =
-    dinhDang(tongMat);
-
-    document.getElementById(
-        "tongChiPhi"
-    ).innerText =
-    dinhDang(tongChiPhi);
-
-    document.getElementById(
-        "tongLoiNhuan"
-    ).innerText =
-    dinhDang(tongLoiNhuan);
 }
 
 hienThi();
