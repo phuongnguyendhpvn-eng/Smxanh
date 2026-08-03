@@ -51,10 +51,13 @@ button{
 
 .btn-save{
     background:#16a34a;
+    width:100%;
+    margin-bottom:8px;
 }
 
 .btn-delete{
     background:#dc2626;
+    width:100%;
 }
 
 .small-btn{
@@ -81,6 +84,10 @@ th{
 
 .summary{
     line-height:1.8;
+}
+
+.table-wrap{
+    overflow-x:auto;
 }
 </style>
 </head>
@@ -132,14 +139,13 @@ Xóa toàn bộ dữ liệu
 <span id="tongMat">0 đ</span><br>
 
 <b>Tổng Chi phí:</b>
-<span id="tongChiPhi">0 đ</span><br>
-
-<b>Tổng Lợi nhuận:</b>
-<span id="tongLoiNhuan">0 đ</span>
+<span id="tongChiPhi">0 đ</span>
 
 </div>
 
 <div class="card">
+
+<div class="table-wrap">
 
 <table>
 
@@ -151,7 +157,6 @@ Xóa toàn bộ dữ liệu
 <th>Rút App</th>
 <th>Tiền mặt</th>
 <th>Chi phí</th>
-<th>Lợi nhuận</th>
 <th>Xóa</th>
 </tr>
 </thead>
@@ -159,6 +164,8 @@ Xóa toàn bộ dữ liệu
 <tbody id="bangDuLieu"></tbody>
 
 </table>
+
+</div>
 
 </div>
 
@@ -213,16 +220,14 @@ let tongApp=0;
 let tongRutApp=0;
 let tongMat=0;
 let tongChiPhi=0;
-let tongLoiNhuan=0;
 
 duLieu.forEach((item,index)=>{
 
-tongThuNhap+=item.thuNhap;
-tongApp+=item.app;
-tongRutApp+=item.rutApp;
-tongMat+=item.mat;
-tongChiPhi+=item.chiPhi;
-tongLoiNhuan+=item.loiNhuan;
+tongThuNhap += item.thuNhap;
+tongApp += item.app;
+tongRutApp += item.rutApp;
+tongMat += item.mat;
+tongChiPhi += item.chiPhi;
 
 html += `
 <tr>
@@ -232,7 +237,6 @@ html += `
 <td>${dinhDang(item.rutApp)}</td>
 <td>${dinhDang(item.mat)}</td>
 <td>${dinhDang(item.chiPhi)}</td>
-<td>${dinhDang(item.loiNhuan)}</td>
 <td>
 <button class="small-btn"
 onclick="xoaDong(${index})">
@@ -260,9 +264,6 @@ dinhDang(tongMat);
 
 document.getElementById("tongChiPhi").innerText =
 dinhDang(tongChiPhi);
-
-document.getElementById("tongLoiNhuan").innerText =
-dinhDang(tongLoiNhuan);
 
 }
 
@@ -309,11 +310,7 @@ if(cuoiKy >= dauKy){
 
 }
 
-const mat =
-thuNhap - app;
-
-const loiNhuan =
-thuNhap - chiPhi;
+const mat = thuNhap - app;
 
 duLieu.push({
 
@@ -322,8 +319,7 @@ duLieu.push({
     app,
     rutApp,
     mat,
-    chiPhi,
-    loiNhuan
+    chiPhi
 
 });
 
